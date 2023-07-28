@@ -4,7 +4,6 @@
  *
  * @format
  */
-
 import React, {useState, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
@@ -30,40 +29,34 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 const Tab = createBottomTabNavigator();
 import {io} from 'socket.io-client';
-import {axios} from 'react-native-axios';
+
 import {NavigationContainer} from '@react-navigation/native';
 import SignUp from './src/screens/SignUp';
+import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 function App(): JSX.Element {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [Data, setData] = useState([{}]);
 
   useEffect(() => {
-    const fetchHomepageData = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/');
-        const data = await response;
-        console.log(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    const socket = io('http://localhost:5000');
+    const socket = io('http://10.0.2.2:5000');
     console.log('Socket created');
 
     socket.on('connect', () => {
       console.log('socket connected');
     });
+
+    socket.on('data', data => {
+      console.log('data is triggered ');
+      setData(data);
+    });
     // Listen for the 'server-event' from the server
     socket.on('server-event', data => {
       console.log('Received data from the server:', data);
       setData(data);
-      console.log(Data);
     });
 
     // Emit 'client-event' to request data from the server
     socket.emit('client-event', {message: 'Hello from the client!'});
-
-    fetchHomepageData();
   }, []);
 
   const renderBottomDrawer = () => {
@@ -71,7 +64,9 @@ function App(): JSX.Element {
       return (
         <NavigationContainer>
           <Tab.Navigator>
-            <Tab.Screen name="Login" component={Login} />
+            <Tab.Screen name="Login">
+            {props => <Login {...props} setLogin={setIsLoggedIn} />}
+            </Tab.Screen>
             <Tab.Screen name="SignUp" component={SignUp} />
           </Tab.Navigator>
         </NavigationContainer>
@@ -80,10 +75,18 @@ function App(): JSX.Element {
       return (
         <NavigationContainer>
           <Tab.Navigator>
-            <Tab.Screen name="List" component={ListAPI} />
+            <Tab.Screen name="List">
+              {props => <ListAPI {...props} data={Data} />}
+            </Tab.Screen>
           </Tab.Navigator>
         </NavigationContainer>
       );
+    }
+  };
+
+  const printData = () => {
+    for (const obj of Data) {
+      console.log(obj);
     }
   };
 
@@ -99,5 +102,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+type LoginProps = PropsWithChildren<{
+  setLogin: (value: boolean) => void;
+}>;
 
 export default App;
