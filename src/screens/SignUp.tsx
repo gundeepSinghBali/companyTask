@@ -1,16 +1,32 @@
-import React,{useState} from 'react';
-import {View, TextInput, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import React, {useState, useContext} from 'react';
+import {UserContext} from '../../App';
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 function SignUp() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const {getSocket} = useContext(UserContext);
 
-  const handleSignup = () => {
-    // Perform signup logic here
-    // For a simple example, we'll just log the user input for now
-    console.log('Name:', name);
-    console.log('Email:', email);
-    console.log('Password:', password);
+  type User = {
+    name: String;
+    password: String;
+    email: String;
+  };
+
+  const sendSignUpData = (data: User) => {
+    if (email === '' || name === '' || password === '') {
+      return;
+    } else {
+      getSocket.emit('sendSignUpData', data, () => {
+        console.log(data);
+      });
+    }
   };
 
   return (
@@ -35,8 +51,20 @@ function SignUp() {
         value={password}
         onChangeText={text => setPassword(text)}
       />
-      <TouchableOpacity style={styles.button} onPress={handleSignup}>
-        <Text style={styles.buttonText}>Sign Up</Text>
+      <TouchableOpacity style={styles.button}>
+        <Text
+          style={styles.buttonText}
+          onPress={() => {
+            const user: User = {
+              name: name,
+              password: password,
+              email: email,
+            };
+            sendSignUpData(user);
+            console.log("Sign Up Button Pressed");
+          }}>
+          Sign Up
+        </Text>
       </TouchableOpacity>
     </View>
   );

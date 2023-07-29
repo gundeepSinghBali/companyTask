@@ -29,18 +29,20 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 const Tab = createBottomTabNavigator();
 import {io} from 'socket.io-client';
-
+export type SocketType = Socket | null;
 import {NavigationContainer} from '@react-navigation/native';
 import SignUp from './src/screens/SignUp';
 export const UserContext = createContext('Default');
 function App(): JSX.Element {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [Data, setData] = useState([{}]);
+  const [getSocket, setSocket] = useState<SocketType>(null);
 
   useEffect(() => {
     const socket = io('http://10.0.2.2:5000');
     console.log('Socket created');
 
+    setSocket(socket);
     socket.on('connect', () => {
       console.log('socket connected');
     });
@@ -53,6 +55,15 @@ function App(): JSX.Element {
     socket.on('server-event', data => {
       console.log('Received data from the server:', data);
       setData(data);
+    });
+
+    socket.on('isLoginValid', data => {
+      console.log(data);
+    });
+
+    socket.on('allowLogin', () => {
+      console.log('access allowed');
+      setIsLoggedIn(true);
     });
 
     // Emit 'client-event' to request data from the server
@@ -89,7 +100,7 @@ function App(): JSX.Element {
   };
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
+    <UserContext.Provider value={{isLoggedIn, setIsLoggedIn, getSocket}}>
       <SafeAreaView style={styles.mainAppContainer}>
         {renderBottomDrawer()}
       </SafeAreaView>

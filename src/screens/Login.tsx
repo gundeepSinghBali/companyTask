@@ -1,4 +1,10 @@
-import React, {useContext} from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  InputHTMLAttributes,
+} from 'react';
 import {UserContext} from '../../App';
 import {
   Text,
@@ -8,22 +14,60 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import {io} from 'socket.io-client';
+
+type Person = {
+  email: string;
+  password: string;
+};
 
 function Login() {
-  const {setIsLoggedIn, isLoggedIn} = useContext(UserContext);
+  const {setIsLoggedIn, isLoggedIn, getSocket} = useContext(UserContext);
+  const [isSendLoginData, setIsSendLoginData] = useState<Function>();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const sendLoginData = (data: Person) => {
+    getSocket.emit('sendLoginData', data, () => {
+      console.log('sent this data', data);
+    });
+  };
+
+  useEffect(() => {}, [getSocket]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      <TextInput style={styles.input} placeholder="Email" />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        onChangeText={text => {
+          setEmail(text);
+        }}
+      />
       <TextInput
         style={styles.input}
         placeholder="Password"
         secureTextEntry={true}
+        onChangeText={text => {
+          setPassword(text);
+        }}
       />
       <TouchableOpacity
         style={styles.button}
         onPress={() => alert('Login pressed')}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text
+          style={styles.buttonText}
+          onPress={() => {
+            console.log('Login Pressed');
+            const user: Person = {
+              email: email,
+              password: password,
+            };
+            sendLoginData(user);
+          }}>
+          Login
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
