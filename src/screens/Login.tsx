@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import {UserContext} from '../../App';
 import {
   Text,
   StyleSheet,
@@ -8,8 +9,8 @@ import {
   Alert,
 } from 'react-native';
 
-function Login({props}) {
-  const getLoginState = {Login};
+function Login() {
+  const {setIsLoggedIn, isLoggedIn} = useContext(UserContext);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
@@ -29,7 +30,13 @@ function Login({props}) {
         onPress={() => {
           console.log('pressed');
         }}>
-        <Text style={styles.buttonText}>Sign As Guest</Text>
+        <Text
+          style={styles.buttonText}
+          onPress={() => {
+            setIsLoggedIn(true);
+          }}>
+          Sign As Guest
+        </Text>
       </TouchableOpacity>
     </View>
   );

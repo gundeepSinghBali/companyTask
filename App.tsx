@@ -4,7 +4,7 @@
  *
  * @format
  */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext, createContext} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
@@ -32,7 +32,7 @@ import {io} from 'socket.io-client';
 
 import {NavigationContainer} from '@react-navigation/native';
 import SignUp from './src/screens/SignUp';
-import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+export const UserContext = createContext('Default');
 function App(): JSX.Element {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [Data, setData] = useState([{}]);
@@ -64,9 +64,7 @@ function App(): JSX.Element {
       return (
         <NavigationContainer>
           <Tab.Navigator>
-            <Tab.Screen name="Login">
-            {props => <Login {...props} setLogin={setIsLoggedIn} />}
-            </Tab.Screen>
+            <Tab.Screen name="Login" component={Login} />
             <Tab.Screen name="SignUp" component={SignUp} />
           </Tab.Navigator>
         </NavigationContainer>
@@ -91,9 +89,11 @@ function App(): JSX.Element {
   };
 
   return (
-    <SafeAreaView style={styles.mainAppContainer}>
-      {renderBottomDrawer()}
-    </SafeAreaView>
+    <UserContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
+      <SafeAreaView style={styles.mainAppContainer}>
+        {renderBottomDrawer()}
+      </SafeAreaView>
+    </UserContext.Provider>
   );
 }
 
@@ -102,9 +102,5 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
-type LoginProps = PropsWithChildren<{
-  setLogin: (value: boolean) => void;
-}>;
 
 export default App;
